@@ -62,7 +62,7 @@ details.
 ## Safety
 
 PMBus is connected directly to MCU GPIO. Use a common ground and external
-2.2–4.7 kOhm pull-ups to **3.3 V**. Never pull SDA or SCL to 5 V. Confirm your
+2.2–4.7 kOhm pull-ups to **3.3 V** (most boards already have them). Never pull SDA or SCL to 5 V. Confirm your
 board's voltage tolerance and pin assignments before connecting a motherboard,
 PSU, or test controller.
 
@@ -70,7 +70,50 @@ This project exposes telemetry only. Fan commands and every other PSU-control
 write are rejected or handled as local compatibility operations; no PMBus write
 is sent to the USB-connected PSU.
 
-## Build
+## Install a prebuilt release
+
+No compiler or embedded-development tools are required. Download a UF2 image from
+the [latest GitHub Release](https://github.com/charlescao460/psu-usb-to-pmbus/releases/latest).
+Do not download GitHub's automatically generated source-code archives.
+
+### Materials
+* [Adafruit Feather RP2040 with USB Type A Host](https://www.adafruit.com/product/5723)
+* [4-pin I2C To Headers Cable](https://www.adafruit.com/product/4397)
+
+### Choose the PMBus address
+
+Each release contains two firmware images:
+
+| Firmware file | Use it for |
+|---|---|
+| `psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x58.uf2` | The first or only PSU; `0x58` is the normal default. |
+| `psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x59.uf2` | A second PSU sharing the same PMBus wires. |
+
+Each USB-connected PSU currently needs its own Feather bridge. For two PSUs, use
+two Feather boards and flash one with the `0x58` image and the other with the
+`0x59` image. Never connect two PMBus targets using the same address. Changing
+the address later is safe: simply flash the other UF2 image.
+
+### Flash the Feather
+
+1. Download the appropriate `.uf2` file from the latest release.
+2. Disconnect the Feather from the motherboard PMBus header before flashing.
+3. Connect the Feather's programming USB port to a computer while holding its
+   **BOOTSEL** button. Alternatively, hold BOOTSEL, briefly press **RESET**, then
+   release BOOTSEL.
+4. Wait for a removable drive named **RPI-RP2** to appear.
+5. Copy the downloaded `.uf2` file onto **RPI-RP2**. The drive disappearing is
+   normal: the Feather automatically reboots into the new firmware.
+6. Disconnect programming USB if it is not needed, then connect the AX1600i to the
+   Feather's USB-A host port.
+7. Reconnect PMBus SDA, SCL, and ground according to the
+   [RP2040 wiring guide](doc/mcu/RP2040.md). 
+
+The release also includes `SHA256SUMS.txt` for optional download-integrity
+verification. If the Feather does not appear as **RPI-RP2**, disconnect it and
+repeat step 3 while continuing to hold BOOTSEL during connection or reset.
+
+## Build from source
 
 Prerequisites are CMake 3.25 or newer, Ninja, Git, and either PowerShell 7 or
 Bash. The bootstrap scripts download verified project-local copies of Arm
@@ -107,6 +150,14 @@ Important CMake cache variables are:
 
 Selections are resolved at configure time. The firmware does not use heap-backed
 runtime target discovery.
+
+### Publish a firmware release
+
+Repository maintainers can open **Actions**, select **Build and release RP2040
+firmware**, and choose **Run workflow**. The workflow builds both address variants
+on Ubuntu 26.04 and, only after both succeed, creates a release tagged with a UTC
+timestamp. The two UF2 files and their SHA-256 checksum file are attached to that
+release.
 
 ## Test
 

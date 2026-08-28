@@ -1,0 +1,76 @@
+name: Build and release RP2040 firmware
+
+run-name: Release RP2040 firmware from ${{ github.ref_name }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rp2040-firmware-release
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build two PMBus addresses and publish release
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake curl git ninja-build xz-utils
+
+      - name: Bootstrap pinned embedded toolchain
+        run: bash scripts/bootstrap-toolchain.sh
+
+      - name: Build address 0x58 and 0x59 firmware
+        run: bash scripts/build-release-firmware.sh
+
+      - name: Prepare timestamped release
+        id: release
+        shell: bash
+        run: |
+          timestamp="$(date -u +'%Y%m%dT%H%M%SZ')"
+          tag="firmware-${timestamp}"
+          title="RP2040 firmware ${timestamp}"
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "title=${title}" >> "$GITHUB_OUTPUT"
+
+          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
+          Automated firmware build for the Adafruit Feather RP2040 USB Host and
+          Corsair AX1600i, built from commit ${GITHUB_SHA} on Ubuntu 26.04.
+
+          Choose exactly one image for each Feather:
+
+          - \`psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x58.uf2\`: first or only PSU.
+          - \`psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x59.uf2\`: second PSU on the same PMBus.
+
+          A two-PSU system requires two Feather boards with different address images.
+          See the repository README for wiring, safety, and BOOTSEL flashing instructions.
+          SHA-256 hashes are provided in \`SHA256SUMS.txt\`.
+          EOF
+
+      - name: Create GitHub Release and upload UF2 files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            build/release/psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x58.uf2 \
+            build/release/psu-usb-to-pmbus-rp2040-ax1600i-pmbus-0x59.uf2 \
+            build/release/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_TITLE" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
+            --latest

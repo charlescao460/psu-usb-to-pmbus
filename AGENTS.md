@@ -86,6 +86,9 @@
 - Arduino compile targets: Uno, Due Native USB, and Arduino Zero Native USB.
 - Firmware: run `scripts/bootstrap-toolchain.ps1`, then `scripts/build.ps1`; the
   default UF2 is under `build/rp2040-ax1600i/`.
+- Manual releases use `.github/workflows/release-rp2040.yml`. Keep its Ubuntu
+  build producing distinct, clearly named `0x58` and `0x59` UF2 assets through
+  `scripts/build-release-firmware.sh`; publish only after both builds succeed.
 - Diagnostic register scan: build preset `rp2040-ax1600i-scan`. Unknown addresses
   may return patterned data and must not receive semantics without independent
   validation.
