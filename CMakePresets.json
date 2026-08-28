@@ -1,0 +1,60 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "host-tests",
+      "inherits": "base",
+      "cacheVariables": {
+        "CUSB2PMBUS_BUILD_FIRMWARE": "OFF",
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "rp2040-ax1600i",
+      "inherits": "base",
+      "cacheVariables": {
+        "CUSB2PMBUS_BUILD_FIRMWARE": "ON",
+        "BUILD_TESTING": "OFF",
+        "CUSB2PMBUS_MCU": "RP2040",
+        "CUSB2PMBUS_PSU": "CORSAIR_AX1600I",
+        "CUSB2PMBUS_BOARD": "ADAFRUIT_FEATHER_RP2040_USB_HOST",
+        "CUSB2PMBUS_PMBUS_ADDRESS": "0x58",
+        "CUSB2PMBUS_LOG_LEVEL": "2",
+        "PICO_COMPILER": "pico_arm_cortex_m0plus_clang"
+      }
+    },
+    {
+      "name": "rp2040-ax1600i-scan",
+      "inherits": "rp2040-ax1600i",
+      "cacheVariables": {
+        "CUSB2PMBUS_AX1600I_REGISTER_SCAN": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "host-tests", "configurePreset": "host-tests" },
+    { "name": "rp2040-ax1600i", "configurePreset": "rp2040-ax1600i" },
+    { "name": "rp2040-ax1600i-scan", "configurePreset": "rp2040-ax1600i-scan" }
+  ],
+  "testPresets": [
+    {
+      "name": "host-tests",
+      "configurePreset": "host-tests",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

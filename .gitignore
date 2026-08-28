@@ -1,0 +1,28 @@
+# Build and fetched dependency output
+/build/
+/cmake-build-*/
+/toolchain/
+/.cache/
+
+# Python
+/.venv/
+__pycache__/
+*.py[cod]
+/.pytest_cache/
+/test-results/
+/local-debug/
+
+# Arduino
+/.arduino/
+*.elf
+*.hex
+*.bin
+*.uf2
+
+# Editors and operating systems
+/.idea/
+/.vscode/
+*.user
+*.suo
+.DS_Store
+Thumbs.db

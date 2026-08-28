@@ -1,0 +1,16 @@
+diff --git a/src/pio_usb.c b/src/pio_usb.c
+index 05dce39..038e9df 100644
+--- a/src/pio_usb.c
++++ b/src/pio_usb.c
+@@ -227,7 +227,10 @@ int __no_inline_not_in_flash_func(pio_usb_bus_receive_packet_and_handshake)(
+       if (idx >= 2) {
+         crc_prev2 = crc_prev;
+         crc_prev = crc;
+-        crc = update_usb_crc16(crc, data);
++        // Keep this timing-critical update inline with Clang. The
++        // __time_critical_func attribute in usb_crc.h otherwise prevents the
++        // compiler from honoring the inline declaration.
++        crc = (crc >> 8) ^ crc16_tbl[(crc ^ data) & 0xff];
+         crc_receive = (crc_receive >> 8) | (data << 8);
+         crc_match = ((crc_receive ^ 0xffff) == crc_prev2);
+       }
