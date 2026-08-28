@@ -34,8 +34,13 @@ if [[ ! -x "$arm_root/bin/clang" ]]; then
   echo "$arm_sha  $arm_archive" | sha256sum --check -
   extract_root="$(mktemp -d "$toolchain_root/arm-extract.XXXXXX")"
   tar -xJf "$arm_archive" -C "$extract_root"
-  clang_path="$(find "$extract_root" -type f -path '*/bin/clang' -print -quit)"
-  [[ -n "$clang_path" ]] || { echo 'clang not found in archive' >&2; exit 1; }
+  # Linux ATfE packages expose bin/clang as a relative symlink to clang-<major>.
+  # Keep the symlink and its target together when moving the extracted tree.
+  clang_path="$(find "$extract_root" \( -type f -o -type l \) -path '*/bin/clang' -print -quit)"
+  if [[ -z "$clang_path" || ! -x "$clang_path" ]]; then
+    echo 'executable clang entry not found in archive' >&2
+    exit 1
+  fi
   extracted_root="$(dirname "$(dirname "$clang_path")")"
   rm -rf -- "$arm_root"
   mv -- "$extracted_root" "$arm_root"
