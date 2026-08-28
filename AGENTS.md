@@ -7,6 +7,9 @@
   in `doc/psu/<PSU>.md`.
 - Motherboard-specific investigation and compatibility guidance belong in
   `doc/FAQ_BMC.md`, not in the root README.
+- `doc/PMBUS_COMMANDS.md` is the authoritative public command matrix. Update it
+  whenever command handling, data sources, write policy, pages, or profile
+  deviations change.
 - `AGENTS.local.md`, when present, contains ignored workstation and lab state.
   Read it when working with connected hardware, but never copy ports, credentials,
   private addresses, absolute paths, or transient observations into tracked files.
@@ -73,6 +76,8 @@
   use this during inventory discovery.
 - Do not add nonstandard PMBus encoding workarounds for a motherboard firmware or
   sensor-map defect. Record confirmed controller behavior in `doc/FAQ_BMC.md`.
+- Keep `doc/PMBUS_COMMANDS.md` synchronized with the command enum and both the
+  PMBus server read and write paths.
 
 ## Validation
 

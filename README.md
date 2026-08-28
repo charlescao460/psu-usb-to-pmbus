@@ -17,6 +17,8 @@ whole firmware.
 
 ## Architecture
 
+![Example hardware connection using RP2040](doc/images/rp2040_feather.png)
+
 ```mermaid
 flowchart LR
    PSU["Power Supply Unit\n(e.g. Corsair AX1600i)"] -->|"USB"| MCU["MCU Dev Board\n(e.g. RP2040)"]
@@ -48,6 +50,8 @@ details.
   and platform implementation notes.
 - [Corsair AX1600i backend](doc/psu/Corsair_AX1600i.md) — USB protocol, register
   map, polling, recovery, and PMBus page mapping.
+- [PMBus command support](doc/PMBUS_COMMANDS.md) — command-by-command coverage,
+  data sources, intentional deviations, and application-profile status.
 - [BMC compatibility FAQ](doc/FAQ_BMC.md) — discovery behavior, common symptoms,
   and the Gigabyte MZ73-LM0 case study.
 - [PMBusTestHost](tools/PMBusTestHost/README.md) — Arduino bridge protocol, wiring,
@@ -145,8 +149,9 @@ documented in [PMBusTestHost](tools/PMBusTestHost/README.md).
   write reaches the PSU and CML status is never left sticky.
 
 See the [AX1600i backend guide](doc/psu/Corsair_AX1600i.md) for the complete
-implementation details and [BMC compatibility FAQ](doc/FAQ_BMC.md) for controller
-quirks.
+implementation details, the [PMBus command matrix](doc/PMBUS_COMMANDS.md) for
+precise command coverage, and [BMC compatibility FAQ](doc/FAQ_BMC.md) for
+controller quirks.
 
 ## Porting
 
@@ -198,6 +203,10 @@ src/telemetry/  snapshot storage and derived telemetry
 tests/          portable C++ and Python tests
 tools/          Arduino bridge and Python PMBus test host
 ```
+
+## Credits
+* [thad0ctor/corsair-top](https://github.com/thad0ctor/corsair-top)
+* [Jon0/ax1600i](https://github.com/Jon0/ax1600i)
 
 ## License
 

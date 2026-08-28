@@ -288,7 +288,7 @@ ReadResult PmbusServer::read_on_page(std::uint8_t page, std::uint8_t command,
       response.supported = true;
       break;
    case Command::FanConfig12:
-      response.bytes[0] = 0x80; // Fan 1 installed; RPM mode.
+      response.bytes[0] = 0x80; // Fan 1 installed; duty-cycle command mode.
       response.size = 1;
       response.supported = true;
       break;
