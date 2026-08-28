@@ -155,23 +155,43 @@ controller quirks.
 
 ## Porting
 
-The project has two primary extension points: the MCU/platform layer and the PSU
-backend. Keep new implementations statically selected through CMake and preserve
-the boundary formed by `TelemetrySnapshot`.
+The project has two implementation extension points—the MCU/platform layer and
+the PSU backend—and three configure-time selections:
+
+| Selection | Chooses |
+|---|---|
+| `PSU_USB_TO_PMBUS_MCU` | MCU family, SDK, and low-level platform implementation |
+| `PSU_USB_TO_PMBUS_BOARD` | Board pinout, USB-host wiring, and board-specific initialization |
+| `PSU_USB_TO_PMBUS_PSU` | PSU USB protocol, polling state machine, and telemetry mapping |
+
+Keep these selections static so the firmware can use bounded storage and avoid
+runtime target discovery. The portable PMBus and telemetry layers communicate
+with every port through `UsbTransport`, `PsuBackend`, and `TelemetrySnapshot`.
 
 ### Add an MCU or board
 
-1. Add a platform directory under `src/platform/<mcu>/` implementing asynchronous
-   `UsbTransport` and a non-blocking PMBus/I2C target.
-2. Provide board initialization, USB-host pin configuration, PMBus pins, timing,
-   and a stable hardware identifier without leaking platform callbacks into the
-   PMBus server.
-3. Add the MCU, board, SDK, and source selection to `cmake/SelectTarget.cmake` and
-   the top-level CMake target.
-4. Add host-testable logic where possible and validate I2C behavior with a real
-   controller or logic analyzer.
-5. Document the implementation in `doc/mcu/<MCU>.md` and link it from the supported
-   hardware table.
+1. Choose and pin the compiler, MCU SDK, USB-host stack, and any code-generation
+   tools. Bootstrap them into ignored `toolchain/` storage with version and
+   checksum verification; do not depend on one developer's global installation.
+2. If the SDK or toolchain selects the C/C++ compilers, add its import or toolchain
+   file before the top-level `project()` call. Keep SDK initialization and
+   dependencies conditional on the selected MCU so host tests need no embedded
+   toolchain.
+3. Add the MCU and board values to `cmake/SelectTarget.cmake`, validate unsupported
+   combinations there, and translate the public board selection into the SDK's
+   board identifier and pin configuration.
+4. Add `src/platform/<mcu>/` implementations for asynchronous `UsbTransport`, the
+   non-blocking PMBus/I2C target, board initialization, USB-host pins, timing, and
+   a stable platform identifier.
+5. In `CMakeLists.txt`, select only that platform's sources, include paths, compile
+   definitions, linker flags, SDK libraries, and firmware-output helpers. Do not
+   introduce MCU headers or libraries into `psu_usb_to_pmbus_core`.
+6. Add an isolated configure/build preset and update both PowerShell and Bash
+   bootstrap/build flows. A fresh checkout should be able to bootstrap, configure,
+   build, and locate its firmware without manual environment setup.
+7. Keep portable logic covered by host tests, then validate USB, I2C recovery, and
+   electrical behavior on hardware. Document the port in `doc/mcu/<MCU>.md` and
+   link it from the supported-hardware table.
 
 ### Add a PSU
 
@@ -181,10 +201,29 @@ the boundary formed by `TelemetrySnapshot`.
    handler query the PSU directly.
 3. Define polling cadence, reply validation, detach/recovery behavior, page/rail
    mapping, identity fields, and stale-data behavior.
-4. Add a configure-time `PSU_USB_TO_PMBUS_PSU` selection and focused protocol,
-   conversion, malformed-reply, and recovery tests.
-5. Document verified commands and limitations in `doc/psu/<PSU>.md` and update the
-   supported hardware table.
+4. Add the new `PSU_USB_TO_PMBUS_PSU` value and make CMake select only the chosen
+   backend sources and target-specific compile definitions. Keep PSU protocol
+   sources host-buildable whenever they do not require MCU APIs.
+5. Add focused protocol, conversion, malformed-reply, timeout, and recovery tests.
+   If the backend changes PMBus coverage or semantics, update
+   `doc/PMBUS_COMMANDS.md`.
+6. Document verified commands, USB identity, timing, data sources, and limitations
+   in `doc/psu/<PSU>.md`, then update the supported-hardware table.
+
+### CMake and toolchain checklist
+
+A port is not complete until its build is reproducible from a clean checkout:
+
+| Area | Required integration |
+|---|---|
+| Target selection | Extend `cmake/SelectTarget.cmake` and reject invalid MCU/board/PSU combinations with clear errors. |
+| Compiler and SDK | Pin versions; import compiler-selecting SDK/toolchain logic before `project()`; initialize the selected SDK afterward. |
+| Dependencies | Fetch or import only the dependencies needed by the selected target, with immutable release tags or commits. |
+| Firmware target | Conditionally select sources, definitions, libraries, linker options, and output generation in `CMakeLists.txt`. |
+| Host tests | Preserve `PSU_USB_TO_PMBUS_BUILD_FIRMWARE=OFF` so portable protocol and telemetry tests build with a normal host compiler. |
+| Presets | Add named configure and build presets with a separate `build/<preset>/` directory for each supported combination. |
+| Bootstrap scripts | Keep PowerShell and Bash behavior equivalent, downloads verified, operations idempotent, and generated files under ignored directories. |
+| Documentation | Record prerequisites, exact build/flash commands, artifacts, pins, and target limitations in the corresponding MCU or PSU guide. |
 
 All ports must retain the read-only policy, bounded static storage, atomic
 snapshot publication, and non-blocking I2C handling described in [AGENTS.md](AGENTS.md).
