@@ -4,6 +4,7 @@ from collections import deque
 
 import pytest
 
+from tools.pmbus_test.__main__ import parser
 from tools.pmbus_test.bridge import Bridge, BridgeError
 from tools.pmbus_test.commands import (
     Command,
@@ -32,6 +33,14 @@ class FakeSerial:
 
     def close(self) -> None:
         self.closed = True
+
+
+def test_cli_requires_explicit_serial_port() -> None:
+    with pytest.raises(SystemExit):
+        parser().parse_args(["scan"])
+
+    args = parser().parse_args(["scan", "--port", "test-bridge"])
+    assert args.port == "test-bridge"
 
 
 def test_bridge_information_and_framing() -> None:

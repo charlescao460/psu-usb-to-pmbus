@@ -255,7 +255,7 @@ def parser() -> argparse.ArgumentParser:
                            ("reference", reference)):
         command = subparsers.add_parser(name)
         command.set_defaults(function=function)
-        command.add_argument("--port", default="COM8")
+        command.add_argument("--port", required=True, metavar="SERIAL_PORT")
         command.add_argument("--address", type=integer, default=None if name == "scan" else 0x58)
         command.add_argument("--timeout", type=float, default=1.0)
         if name == "monitor":

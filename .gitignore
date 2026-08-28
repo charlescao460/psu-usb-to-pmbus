@@ -10,7 +10,10 @@ __pycache__/
 *.py[cod]
 /.pytest_cache/
 /test-results/
+
+# Local agent and lab state
 /local-debug/
+/AGENTS.local.md
 
 # Arduino
 /.arduino/
