@@ -1,6 +1,6 @@
-# CorsairUSB2PMBus
+# psu-usb-to-pmbus
 
-CorsairUSB2PMBus turns telemetry from a Corsair AX1600i USB connection into a read-only PMBus target. The first platform is an Adafruit Feather RP2040 USB Host, but USB transport, PSU backend, telemetry storage, and PMBus serving are separate interfaces so other MCUs and PSUs can be added.
+psu-usb-to-pmbus turns telemetry from a Corsair AX1600i USB connection into a read-only PMBus target. The first platform is an Adafruit Feather RP2040 USB Host, but USB transport, PSU backend, telemetry storage, and PMBus serving are separate interfaces so other MCUs and PSUs can be added.
 
 > This implementation is compatible with the useful telemetry portion of the PMBus AC/DC Server Power Supply profile. It is not profile-certified: there is no SMBAlert wire, control writes are deliberately ignored, and status/energy fields not exposed by Corsair are synthesized.
 
@@ -48,7 +48,7 @@ Linux:
 
 The firmware and UF2 are generated in `build/rp2040-ax1600i/`. Bootstrap also installs the official Pico SDK 2.3.0 host tools so no system C/C++ compiler is needed for `pioasm` or `picotool`. The build uses the Ninja generator, ATfE Clang, Pico SDK 2.3.0, TinyUSB 0.21.0, and the TinyUSB-pinned Pico-PIO-USB revision. CMake applies a small pinned Pico-PIO-USB patch that keeps its receive CRC update inline under Clang; this is required to meet the AX1600i USBXpress bulk-IN ACK timing.
 
-Configuration cache variables include `CUSB2PMBUS_MCU`, `CUSB2PMBUS_PSU`, `CUSB2PMBUS_BOARD`, `CUSB2PMBUS_PMBUS_ADDRESS`, and `CUSB2PMBUS_LOG_LEVEL`.
+Configuration cache variables include `PSU_USB_TO_PMBUS_MCU`, `PSU_USB_TO_PMBUS_PSU`, `PSU_USB_TO_PMBUS_BOARD`, `PSU_USB_TO_PMBUS_PMBUS_ADDRESS`, and `PSU_USB_TO_PMBUS_LOG_LEVEL`.
 
 The backend reads native AX1600i input power from register `0x97`; no efficiency curve is used to synthesize input power. USB capture correlated with iCUE showed that its visible per-rail power is `VOUT * IOUT`, including the 3.3 V page where native register `0x96` returned zero, and its total output is the sum of the three aggregate rail products. Firmware therefore uses the same arithmetic for PMBus `READ_POUT` and total-output telemetry. Native `0x96` and `0xEE` values remain separate diagnostics and cannot become PMBus power responses. Register command processing validates the decoded `{0}` header acknowledgement and `{0, 0}` trigger acknowledgement before accepting returned data.
 
@@ -68,7 +68,7 @@ For motherboard compatibility, unsupported discovery reads and locally ignored w
 
 The live `verify` command asserts this iCUE power relationship on aggregate pages `0x00`-`0x02`, allowing only LINEAR11 quantization tolerance.
 
-For read-only protocol exploration, `CUSB2PMBUS_AX1600I_REGISTER_SCAN=ON` (or preset `rp2040-ax1600i-scan`) scans `0x00` through `0xFF` using two-byte reads and emits `AXSCAN` records. Unknown addresses can return patterned values rather than errors, so scan output is diagnostic evidence, not an automatic register map. The live AX1600i scan found no credible standalone efficiency register.
+For read-only protocol exploration, `PSU_USB_TO_PMBUS_AX1600I_REGISTER_SCAN=ON` (or preset `rp2040-ax1600i-scan`) scans `0x00` through `0xFF` using two-byte reads and emits `AXSCAN` records. Unknown addresses can return patterned values rather than errors, so scan output is diagnostic evidence, not an automatic register map. The live AX1600i scan found no credible standalone efficiency register.
 
 ## Tests
 

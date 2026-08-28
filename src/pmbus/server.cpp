@@ -1,11 +1,11 @@
-#include "corsair_usb2pmbus/pmbus/server.hpp"
+#include "psu_usb_to_pmbus/pmbus/server.hpp"
 
-#include "corsair_usb2pmbus/pmbus/linear.hpp"
+#include "psu_usb_to_pmbus/pmbus/linear.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-namespace cusb2pmbus::pmbus
+namespace psu_usb_to_pmbus::pmbus
 {
 namespace
 {
@@ -543,4 +543,4 @@ void PmbusServer::note_bad_pec()
    pending_cml_ |= kStatusCmlPacketError;
 }
 
-} // namespace cusb2pmbus::pmbus
+} // namespace psu_usb_to_pmbus::pmbus

@@ -45,7 +45,7 @@ const uint8_t* tud_descriptor_configuration_cb(uint8_t index)
 }
 
 static const char* string_descriptors[] = {
-   (const char[]){0x09, 0x04}, "CorsairUSB2PMBus", "CorsairUSB2PMBus Debug",
+   (const char[]){0x09, 0x04}, "psu-usb-to-pmbus", "psu-usb-to-pmbus Debug",
    "RP2040-AX1600I",           "Debug CDC",
 };
 static uint16_t string_buffer[33];

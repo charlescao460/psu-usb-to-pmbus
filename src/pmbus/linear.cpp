@@ -1,9 +1,9 @@
-#include "corsair_usb2pmbus/pmbus/linear.hpp"
+#include "psu_usb_to_pmbus/pmbus/linear.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-namespace cusb2pmbus::pmbus
+namespace psu_usb_to_pmbus::pmbus
 {
 namespace
 {
@@ -53,4 +53,4 @@ std::uint16_t encode_linear16(float value, std::int8_t exponent)
    return static_cast<std::uint16_t>(std::clamp(std::lround(scaled), 0L, 65535L));
 }
 
-} // namespace cusb2pmbus::pmbus
+} // namespace psu_usb_to_pmbus::pmbus

@@ -1,10 +1,10 @@
-#include "corsair_usb2pmbus/pmbus/commands.hpp"
-#include "corsair_usb2pmbus/pmbus/linear.hpp"
-#include "corsair_usb2pmbus/pmbus/pec.hpp"
-#include "corsair_usb2pmbus/pmbus/server.hpp"
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/protocol.hpp"
-#include "corsair_usb2pmbus/telemetry/power.hpp"
-#include "corsair_usb2pmbus/telemetry/store.hpp"
+#include "psu_usb_to_pmbus/pmbus/commands.hpp"
+#include "psu_usb_to_pmbus/pmbus/linear.hpp"
+#include "psu_usb_to_pmbus/pmbus/pec.hpp"
+#include "psu_usb_to_pmbus/pmbus/server.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/protocol.hpp"
+#include "psu_usb_to_pmbus/telemetry/power.hpp"
+#include "psu_usb_to_pmbus/telemetry/store.hpp"
 
 #include <array>
 #include <cmath>
@@ -30,47 +30,48 @@ void test_corsair_codec()
 {
    constexpr std::array<std::uint8_t, 7> payload{0x13, 0x03, 0x06, 0x01, 0x07, 0x02, 0x88};
    std::array<std::uint8_t, 32> encoded{};
-   const auto size = cusb2pmbus::ax1600i::encode(0, payload, encoded);
+   const auto size = psu_usb_to_pmbus::ax1600i::encode(0, payload, encoded);
    check(size == 16, "encoded size");
    check(encoded[0] == 0x54 && encoded[size - 1] == 0, "encoded framing");
 
    // Replies use command/reply header 7, represented by the table entry for nibble 14.
    encoded[0] = 0xA8;
    std::array<std::uint8_t, 16> decoded{};
-   const auto result =
-      cusb2pmbus::ax1600i::decode(std::span<const std::uint8_t>(encoded.data(), size), decoded);
+   const auto result = psu_usb_to_pmbus::ax1600i::decode(
+      std::span<const std::uint8_t>(encoded.data(), size), decoded);
    check(static_cast<bool>(result), "decode succeeds");
    check(result.size == payload.size() + 1U, "decoded reply size includes terminator byte");
    check(std::equal(payload.begin(), payload.end(), decoded.begin()), "codec round trip");
    check(decoded[payload.size()] == 0, "decoded reply terminator");
 
    constexpr std::array<std::uint8_t, 2> minimal_reply{0xA8, 0};
-   const auto minimal_result = cusb2pmbus::ax1600i::decode(minimal_reply, decoded);
+   const auto minimal_result = psu_usb_to_pmbus::ax1600i::decode(minimal_reply, decoded);
    check(static_cast<bool>(minimal_result) && minimal_result.size == 1U && decoded[0] == 0U,
          "minimal zero reply");
 
    constexpr std::array<std::uint8_t, 1> empty_reply{0};
-   const auto empty_result = cusb2pmbus::ax1600i::decode(empty_reply, decoded);
+   const auto empty_result = psu_usb_to_pmbus::ax1600i::decode(empty_reply, decoded);
    check(static_cast<bool>(empty_result) && empty_result.size == 0U,
          "terminator-only reply is empty");
 
    constexpr std::array<std::uint8_t, 1> zero_reply{0};
    constexpr std::array<std::uint8_t, 2> ok_reply{0, 0};
    constexpr std::array<std::uint8_t, 2> error_reply{1, 0};
-   check(cusb2pmbus::ax1600i::is_zero_reply(zero_reply), "header zero reply accepted");
-   check(!cusb2pmbus::ax1600i::is_zero_reply(ok_reply), "header reply size enforced");
-   check(cusb2pmbus::ax1600i::is_ok_reply(ok_reply), "trigger OK reply accepted");
-   check(!cusb2pmbus::ax1600i::is_ok_reply(zero_reply), "trigger reply size enforced");
-   check(!cusb2pmbus::ax1600i::is_ok_reply(error_reply), "trigger error rejected");
+   check(psu_usb_to_pmbus::ax1600i::is_zero_reply(zero_reply), "header zero reply accepted");
+   check(!psu_usb_to_pmbus::ax1600i::is_zero_reply(ok_reply), "header reply size enforced");
+   check(psu_usb_to_pmbus::ax1600i::is_ok_reply(ok_reply), "trigger OK reply accepted");
+   check(!psu_usb_to_pmbus::ax1600i::is_ok_reply(zero_reply), "trigger reply size enforced");
+   check(!psu_usb_to_pmbus::ax1600i::is_ok_reply(error_reply), "trigger error rejected");
 
    encoded[1] = 0xFF;
-   check(!cusb2pmbus::ax1600i::decode(std::span<const std::uint8_t>(encoded.data(), size), decoded),
+   check(!psu_usb_to_pmbus::ax1600i::decode(std::span<const std::uint8_t>(encoded.data(), size),
+                                            decoded),
          "invalid symbol rejected");
 }
 
 void test_linear()
 {
-   using namespace cusb2pmbus::pmbus;
+   using namespace psu_usb_to_pmbus::pmbus;
    for (const float value : {0.0F, 0.5F, 3.3F, 12.0F, 230.0F, 1600.0F, -2.0F})
    {
       const auto round_trip = decode_linear11(encode_linear11(value));
@@ -85,27 +86,27 @@ void test_linear()
 void test_pec()
 {
    constexpr std::array<std::uint8_t, 9> bytes{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-   check(cusb2pmbus::pmbus::pec(bytes) == 0xF4, "CRC-8/SMBus known vector");
+   check(psu_usb_to_pmbus::pmbus::pec(bytes) == 0xF4, "CRC-8/SMBus known vector");
 
    constexpr std::array<std::uint8_t, 4> bmc_alert_mask{0xB0, 0x1B, 0x81, 0xFF};
    constexpr std::array<std::uint8_t, 3> bmc_mfr_d0{0xB0, 0xD0, 0x00};
    constexpr std::array<std::uint8_t, 7> bmc_page_plus_alert_mask{0xB0, 0x05, 0x04, 0x01,
                                                                   0x1B, 0x7C, 0xFF};
-   check(cusb2pmbus::pmbus::pec(bmc_alert_mask) == 0x86, "captured BMC SMBALERT_MASK PEC");
-   check(cusb2pmbus::pmbus::pec(bmc_mfr_d0) == 0x50, "captured BMC MFR_D0 PEC");
-   check(cusb2pmbus::pmbus::pec(bmc_page_plus_alert_mask) == 0x0F,
+   check(psu_usb_to_pmbus::pmbus::pec(bmc_alert_mask) == 0x86, "captured BMC SMBALERT_MASK PEC");
+   check(psu_usb_to_pmbus::pmbus::pec(bmc_mfr_d0) == 0x50, "captured BMC MFR_D0 PEC");
+   check(psu_usb_to_pmbus::pmbus::pec(bmc_page_plus_alert_mask) == 0x0F,
          "captured BMC PAGE_PLUS_WRITE PEC");
 }
 
 void test_icue_power_derivation()
 {
-   cusb2pmbus::TelemetrySnapshot snapshot{};
+   psu_usb_to_pmbus::TelemetrySnapshot snapshot{};
    snapshot.native_total_output_power = 999.0F;
    snapshot.rails[0] = {12.41F, 34.25F, 999.0F, 0.0F, true, 444.0F};
    snapshot.rails[1] = {4.94F, 3.38F, 999.0F, 0.0F, true, 17.0F};
    snapshot.rails[2] = {3.28F, 3.00F, 999.0F, 0.0F, true, 0.0F};
 
-   cusb2pmbus::update_derived_output_power(snapshot);
+   psu_usb_to_pmbus::update_derived_output_power(snapshot);
 
    check(std::fabs(snapshot.rails[0].power - 425.0425F) < 0.001F,
          "12 V power follows iCUE VOUT * IOUT");
@@ -121,9 +122,9 @@ void test_icue_power_derivation()
 
 void test_read_ein_accumulator()
 {
-   cusb2pmbus::TelemetrySnapshot snapshot{};
-   cusb2pmbus::accumulate_input_power_sample(snapshot, 400.4F);
-   cusb2pmbus::accumulate_input_power_sample(snapshot, 500.6F);
+   psu_usb_to_pmbus::TelemetrySnapshot snapshot{};
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot, 400.4F);
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot, 500.6F);
    check(snapshot.input_power_accumulator == 901U, "READ_EIN accumulates rounded watt samples");
    check(snapshot.input_power_rollover_count == 0U && snapshot.input_power_sample_count == 2U,
          "READ_EIN counters begin aligned");
@@ -131,18 +132,19 @@ void test_read_ein_accumulator()
    snapshot.input_power_accumulator = 32700U;
    snapshot.input_power_rollover_count = 0xFEU;
    snapshot.input_power_sample_count = 0xFFFFFEU;
-   cusb2pmbus::accumulate_input_power_sample(snapshot, 100.0F);
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot, 100.0F);
    check(snapshot.input_power_accumulator == 33U && snapshot.input_power_rollover_count == 0xFFU &&
             snapshot.input_power_sample_count == 0xFFFFFFU,
          "READ_EIN rolls Paccum at 0x7FFF and advances aligned counters");
-   cusb2pmbus::accumulate_input_power_sample(snapshot, 32767.0F);
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot, 32767.0F);
    check(snapshot.input_power_accumulator == 33U && snapshot.input_power_rollover_count == 0U &&
             snapshot.input_power_sample_count == 0U,
          "READ_EIN rollover and 24-bit sample counters wrap independently");
 
    const auto saved = snapshot;
-   cusb2pmbus::accumulate_input_power_sample(snapshot, std::numeric_limits<float>::quiet_NaN());
-   cusb2pmbus::accumulate_input_power_sample(snapshot, -1.0F);
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot,
+                                                   std::numeric_limits<float>::quiet_NaN());
+   psu_usb_to_pmbus::accumulate_input_power_sample(snapshot, -1.0F);
    check(snapshot.input_power_accumulator == saved.input_power_accumulator &&
             snapshot.input_power_rollover_count == saved.input_power_rollover_count &&
             snapshot.input_power_sample_count == saved.input_power_sample_count,
@@ -151,7 +153,7 @@ void test_read_ein_accumulator()
 
 void test_store_and_server()
 {
-   using namespace cusb2pmbus;
+   using namespace psu_usb_to_pmbus;
    using pmbus::Command;
    TelemetryStore store;
    TelemetrySnapshot snapshot{};

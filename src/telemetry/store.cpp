@@ -1,6 +1,6 @@
-#include "corsair_usb2pmbus/telemetry/store.hpp"
+#include "psu_usb_to_pmbus/telemetry/store.hpp"
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 void TelemetryStore::publish(const TelemetrySnapshot& snapshot)
@@ -31,4 +31,4 @@ TelemetrySnapshot TelemetryStore::read() const
    }
 }
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

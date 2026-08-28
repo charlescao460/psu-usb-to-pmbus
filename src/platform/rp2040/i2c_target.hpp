@@ -1,13 +1,13 @@
 #pragma once
 
-#include "corsair_usb2pmbus/pmbus/server.hpp"
 #include "pico/i2c_slave.h"
+#include "psu_usb_to_pmbus/pmbus/server.hpp"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 
-namespace cusb2pmbus::rp2040
+namespace psu_usb_to_pmbus::rp2040
 {
 
 class I2cTarget
@@ -36,4 +36,4 @@ private:
    bool finish_pending_{};
 };
 
-} // namespace cusb2pmbus::rp2040
+} // namespace psu_usb_to_pmbus::rp2040

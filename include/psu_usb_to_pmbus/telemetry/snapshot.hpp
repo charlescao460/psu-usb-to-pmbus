@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 struct RailTelemetry
@@ -61,4 +61,4 @@ struct TelemetrySnapshot
    std::array<char, 17> serial{};
 };
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

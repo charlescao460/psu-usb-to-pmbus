@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <span>
 
-namespace cusb2pmbus::ax1600i
+namespace psu_usb_to_pmbus::ax1600i
 {
 
 inline constexpr std::uint16_t kVendorId = 0x1B1C;
@@ -43,4 +43,4 @@ DecodeResult decode(std::span<const std::uint8_t> encoded, std::span<std::uint8_
 bool is_zero_reply(std::span<const std::uint8_t> response);
 bool is_ok_reply(std::span<const std::uint8_t> response);
 
-} // namespace cusb2pmbus::ax1600i
+} // namespace psu_usb_to_pmbus::ax1600i

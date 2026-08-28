@@ -1,4 +1,4 @@
-# CorsairUSB2PMBus agent notes
+# psu-usb-to-pmbus agent notes
 
 ## Non-negotiable design rules
 

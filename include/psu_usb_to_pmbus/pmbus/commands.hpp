@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace cusb2pmbus::pmbus
+namespace psu_usb_to_pmbus::pmbus
 {
 
 enum class Command : std::uint8_t
@@ -55,4 +55,4 @@ constexpr bool is_valid_page(std::uint8_t page)
    return page <= 0x02U || (page >= 0x10U && page <= 0x1BU);
 }
 
-} // namespace cusb2pmbus::pmbus
+} // namespace psu_usb_to_pmbus::pmbus

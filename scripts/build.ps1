@@ -14,7 +14,7 @@ try {
             $WslRoot = (& wsl.exe -e wslpath -a $ProjectRoot).Trim()
             if ($WslRoot.Contains("'")) { throw 'Project paths containing a single quote are unsupported.' }
             $WslRootQuoted = "'$WslRoot'"
-            & wsl.exe -e bash -lc "cd $WslRootQuoted && cmake -S . -B build/host-tests-wsl -G Ninja -DCUSB2PMBUS_BUILD_FIRMWARE=OFF -DBUILD_TESTING=ON && cmake --build build/host-tests-wsl && ctest --test-dir build/host-tests-wsl --output-on-failure"
+            & wsl.exe -e bash -lc "cd $WslRootQuoted && cmake -S . -B build/host-tests-wsl -G Ninja -DPSU_USB_TO_PMBUS_BUILD_FIRMWARE=OFF -DBUILD_TESTING=ON && cmake --build build/host-tests-wsl && ctest --test-dir build/host-tests-wsl --output-on-failure"
             if ($LASTEXITCODE -ne 0) { throw 'WSL host tests failed' }
         } else {
             throw 'Host tests require cl, clang++, g++, or WSL with a C++ compiler.'

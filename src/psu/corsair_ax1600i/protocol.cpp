@@ -1,8 +1,8 @@
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/protocol.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/protocol.hpp"
 
 #include <array>
 
-namespace cusb2pmbus::ax1600i
+namespace psu_usb_to_pmbus::ax1600i
 {
 namespace
 {
@@ -116,4 +116,4 @@ bool is_ok_reply(std::span<const std::uint8_t> response)
    return response.size() == 2U && response[0] == 0U;
 }
 
-} // namespace cusb2pmbus::ax1600i
+} // namespace psu_usb_to_pmbus::ax1600i

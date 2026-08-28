@@ -1,13 +1,13 @@
 #include "usb_transport.hpp"
 
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/protocol.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/protocol.hpp"
 
 #include "host/usbh_pvt.h"
 #include "tusb.h"
 
 #include <cstring>
 
-namespace cusb2pmbus::rp2040
+namespace psu_usb_to_pmbus::rp2040
 {
 namespace
 {
@@ -331,20 +331,20 @@ void UsbHostTransport::abort_transfer()
    clear_transfer();
 }
 
-} // namespace cusb2pmbus::rp2040
+} // namespace psu_usb_to_pmbus::rp2040
 
 extern "C" usbh_class_driver_t const* usbh_app_driver_get_cb(std::uint8_t* driver_count)
 {
    *driver_count = 1;
-   return &cusb2pmbus::rp2040::kDriver;
+   return &psu_usb_to_pmbus::rp2040::kDriver;
 }
 
 extern "C" void tuh_mount_cb(std::uint8_t dev_addr)
 {
-   cusb2pmbus::rp2040::UsbHostTransport::instance().note_mount(dev_addr);
+   psu_usb_to_pmbus::rp2040::UsbHostTransport::instance().note_mount(dev_addr);
 }
 
 extern "C" void tuh_umount_cb(std::uint8_t dev_addr)
 {
-   cusb2pmbus::rp2040::UsbHostTransport::instance().note_unmount(dev_addr);
+   psu_usb_to_pmbus::rp2040::UsbHostTransport::instance().note_unmount(dev_addr);
 }

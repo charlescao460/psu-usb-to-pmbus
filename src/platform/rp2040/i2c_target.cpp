@@ -1,6 +1,6 @@
 #include "i2c_target.hpp"
 
-#include "corsair_usb2pmbus/pmbus/pec.hpp"
+#include "psu_usb_to_pmbus/pmbus/pec.hpp"
 
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
@@ -10,7 +10,7 @@
 
 #include <span>
 
-namespace cusb2pmbus::rp2040
+namespace psu_usb_to_pmbus::rp2040
 {
 namespace
 {
@@ -172,4 +172,4 @@ void I2cTarget::task(std::uint64_t now_ms)
    restore_interrupts(interrupts);
 }
 
-} // namespace cusb2pmbus::rp2040
+} // namespace psu_usb_to_pmbus::rp2040

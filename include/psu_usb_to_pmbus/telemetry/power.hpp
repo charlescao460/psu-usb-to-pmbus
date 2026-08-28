@@ -1,8 +1,8 @@
 #pragma once
 
-#include "corsair_usb2pmbus/telemetry/snapshot.hpp"
+#include "psu_usb_to_pmbus/telemetry/snapshot.hpp"
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 // iCUE presents aggregate rail power as VOUT * IOUT rather than exposing the
@@ -15,4 +15,4 @@ void update_derived_output_power(TelemetrySnapshot& snapshot) noexcept;
 // sample counters. Add one completed native READ_PIN sample to that state.
 void accumulate_input_power_sample(TelemetrySnapshot& snapshot, float watts) noexcept;
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

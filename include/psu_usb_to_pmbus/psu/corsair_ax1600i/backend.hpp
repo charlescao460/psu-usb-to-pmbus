@@ -1,15 +1,15 @@
 #pragma once
 
-#include "corsair_usb2pmbus/platform/usb_transport.hpp"
-#include "corsair_usb2pmbus/psu/backend.hpp"
-#include "corsair_usb2pmbus/telemetry/store.hpp"
+#include "psu_usb_to_pmbus/platform/usb_transport.hpp"
+#include "psu_usb_to_pmbus/psu/backend.hpp"
+#include "psu_usb_to_pmbus/telemetry/store.hpp"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
 
-namespace cusb2pmbus::ax1600i
+namespace psu_usb_to_pmbus::ax1600i
 {
 
 class Backend final : public PsuBackend
@@ -133,4 +133,4 @@ private:
    std::uint8_t probe_register_{};
 };
 
-} // namespace cusb2pmbus::ax1600i
+} // namespace psu_usb_to_pmbus::ax1600i

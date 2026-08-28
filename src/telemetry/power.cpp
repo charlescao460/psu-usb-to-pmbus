@@ -1,4 +1,4 @@
-#include "corsair_usb2pmbus/telemetry/power.hpp"
+#include "psu_usb_to_pmbus/telemetry/power.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@ constexpr std::uint32_t kReadEinAccumulatorRollover = 0x7FFFU;
 constexpr std::uint32_t kReadEinSampleCountMask = 0xFFFFFFU;
 } // namespace
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 void update_derived_output_power(TelemetrySnapshot& snapshot) noexcept
@@ -48,4 +48,4 @@ void accumulate_input_power_sample(TelemetrySnapshot& snapshot, float watts) noe
       (snapshot.input_power_sample_count + 1U) & kReadEinSampleCountMask;
 }
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "corsair_usb2pmbus/telemetry/snapshot.hpp"
+#include "psu_usb_to_pmbus/telemetry/snapshot.hpp"
 
 #include <array>
 #include <atomic>
 #include <cstdint>
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 class TelemetryStore
@@ -21,4 +21,4 @@ private:
    std::atomic<std::uint8_t> active_{0};
 };
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

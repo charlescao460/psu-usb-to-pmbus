@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <span>
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 enum class TransferStatus : std::uint8_t
@@ -37,4 +37,4 @@ public:
    virtual void abort_transfer() = 0;
 };
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

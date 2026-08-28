@@ -1,8 +1,8 @@
-#include "corsair_usb2pmbus/pmbus/linear.hpp"
-#include "corsair_usb2pmbus/pmbus/server.hpp"
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/backend.hpp"
-#include "corsair_usb2pmbus/telemetry/store.hpp"
 #include "i2c_target.hpp"
+#include "psu_usb_to_pmbus/pmbus/linear.hpp"
+#include "psu_usb_to_pmbus/pmbus/server.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/backend.hpp"
+#include "psu_usb_to_pmbus/telemetry/store.hpp"
 #include "usb_transport.hpp"
 
 #include "hardware/clocks.h"
@@ -23,7 +23,7 @@ constexpr std::uint8_t kPioUsbRootPort = 1;
 constexpr std::uint8_t kUsbDpPin = 16;
 constexpr std::uint8_t kUsbVbusEnablePin = 18;
 
-cusb2pmbus::TelemetryStore telemetry;
+psu_usb_to_pmbus::TelemetryStore telemetry;
 
 void usb_core()
 {
@@ -35,10 +35,10 @@ void usb_core()
    const tusb_rhport_init_t host_init{.role = TUSB_ROLE_HOST, .speed = TUSB_SPEED_AUTO};
    const bool initialized = tusb_init(kPioUsbRootPort, &host_init);
 
-   auto& transport = cusb2pmbus::rp2040::UsbHostTransport::instance();
+   auto& transport = psu_usb_to_pmbus::rp2040::UsbHostTransport::instance();
    transport.note_host_init(configured, initialized);
-   cusb2pmbus::ax1600i::Backend backend(transport, telemetry,
-                                        CUSB2PMBUS_AX1600I_REGISTER_SCAN != 0);
+   psu_usb_to_pmbus::ax1600i::Backend backend(transport, telemetry,
+                                              PSU_USB_TO_PMBUS_AX1600I_REGISTER_SCAN != 0);
    while (true)
    {
       tuh_task_ext(0, false);
@@ -68,12 +68,12 @@ int main()
    multicore_reset_core1();
    multicore_launch_core1(usb_core);
 
-   cusb2pmbus::pmbus::PmbusServer server(telemetry, CUSB2PMBUS_PMBUS_ADDRESS);
-   cusb2pmbus::rp2040::I2cTarget target(server);
+   psu_usb_to_pmbus::pmbus::PmbusServer server(telemetry, PSU_USB_TO_PMBUS_PMBUS_ADDRESS);
+   psu_usb_to_pmbus::rp2040::I2cTarget target(server);
    target.initialize();
 
    std::uint64_t last_log_ms = 0;
-#if CUSB2PMBUS_AX1600I_REGISTER_SCAN
+#if PSU_USB_TO_PMBUS_AX1600I_REGISTER_SCAN
    std::uint32_t last_probe_sequence = 0;
 #endif
    while (true)
@@ -81,15 +81,15 @@ int main()
       const auto now_ms = to_ms_since_boot(get_absolute_time());
       tud_task_ext(0, false);
       target.task(now_ms);
-#if CUSB2PMBUS_LOG_LEVEL > 0
+#if PSU_USB_TO_PMBUS_LOG_LEVEL > 0
       const auto current_snapshot = telemetry.read();
-#if CUSB2PMBUS_AX1600I_REGISTER_SCAN
+#if PSU_USB_TO_PMBUS_AX1600I_REGISTER_SCAN
       if (current_snapshot.probe.sequence != last_probe_sequence)
       {
          std::printf("AXSCAN reg=%02x available=%u size=%u raw=%04x linear=%.6f complete=%u\n",
                      current_snapshot.probe.address, current_snapshot.probe.available,
                      current_snapshot.probe.size, current_snapshot.probe.raw,
-                     cusb2pmbus::pmbus::decode_linear11(current_snapshot.probe.raw),
+                     psu_usb_to_pmbus::pmbus::decode_linear11(current_snapshot.probe.raw),
                      current_snapshot.probe.complete);
          last_probe_sequence = current_snapshot.probe.sequence;
       }
@@ -97,7 +97,7 @@ int main()
       if (now_ms - last_log_ms >= 1000U)
       {
          const auto snapshot = current_snapshot;
-         const auto usb = cusb2pmbus::rp2040::UsbHostTransport::instance().diagnostics();
+         const auto usb = psu_usb_to_pmbus::rp2040::UsbHostTransport::instance().diagnostics();
          std::printf("AX1600i connected=%u valid=%u age_ms=%llu vin=%.2f iin=%.2f pin=%.1f/%lu "
                      "pout=%.1f/native=%.1f 12v=%.2f/%.2f/%.1f/native=%.1f "
                      "temp=%.1f/%.1f fan=%.0f recover=%lu/%lu fail=%lu ack=%lu/%lu empty=%lu "

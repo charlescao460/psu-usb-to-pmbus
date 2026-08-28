@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace cusb2pmbus
+namespace psu_usb_to_pmbus
 {
 
 class PsuBackend
@@ -13,4 +13,4 @@ public:
    virtual bool ready() const = 0;
 };
 
-} // namespace cusb2pmbus
+} // namespace psu_usb_to_pmbus

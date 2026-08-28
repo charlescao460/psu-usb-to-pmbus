@@ -1,14 +1,14 @@
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/backend.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/backend.hpp"
 
-#include "corsair_usb2pmbus/pmbus/linear.hpp"
-#include "corsair_usb2pmbus/psu/corsair_ax1600i/protocol.hpp"
-#include "corsair_usb2pmbus/telemetry/power.hpp"
+#include "psu_usb_to_pmbus/pmbus/linear.hpp"
+#include "psu_usb_to_pmbus/psu/corsair_ax1600i/protocol.hpp"
+#include "psu_usb_to_pmbus/telemetry/power.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cstring>
 
-namespace cusb2pmbus::ax1600i
+namespace psu_usb_to_pmbus::ax1600i
 {
 namespace
 {
@@ -712,4 +712,4 @@ void Backend::task(std::uint64_t now_ms)
    }
 }
 
-} // namespace cusb2pmbus::ax1600i
+} // namespace psu_usb_to_pmbus::ax1600i

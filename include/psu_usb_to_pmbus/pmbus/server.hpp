@@ -1,14 +1,14 @@
 #pragma once
 
-#include "corsair_usb2pmbus/pmbus/commands.hpp"
-#include "corsair_usb2pmbus/telemetry/store.hpp"
+#include "psu_usb_to_pmbus/pmbus/commands.hpp"
+#include "psu_usb_to_pmbus/telemetry/store.hpp"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
 
-namespace cusb2pmbus::pmbus
+namespace psu_usb_to_pmbus::pmbus
 {
 
 enum class WriteResult : std::uint8_t
@@ -65,4 +65,4 @@ private:
    std::array<std::uint8_t, 6> smalert_masks_{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 };
 
-} // namespace cusb2pmbus::pmbus
+} // namespace psu_usb_to_pmbus::pmbus

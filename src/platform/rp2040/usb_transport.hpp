@@ -1,12 +1,12 @@
 #pragma once
 
-#include "corsair_usb2pmbus/platform/usb_transport.hpp"
+#include "psu_usb_to_pmbus/platform/usb_transport.hpp"
 #include "tusb.h"
 
 #include <cstddef>
 #include <cstdint>
 
-namespace cusb2pmbus::rp2040
+namespace psu_usb_to_pmbus::rp2040
 {
 
 struct UsbHostDiagnostics
@@ -104,4 +104,4 @@ private:
    alignas(4) std::uint8_t setup_storage_[8]{};
 };
 
-} // namespace cusb2pmbus::rp2040
+} // namespace psu_usb_to_pmbus::rp2040
